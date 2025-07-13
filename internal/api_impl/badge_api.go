@@ -2,6 +2,7 @@ package api_impl
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"ping-badge-be/internal/model"
 	"ping-badge-be/internal/service"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type BadgeAPI struct {
@@ -41,7 +43,7 @@ func (api *BadgeAPI) ListBadges(c *gin.Context) {
 		}
 
 		issuedBadges, err := api.service.ListIssuedBadgesByUser(context.Background(), userUUID)
-		if err != nil {
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user badges"})
 			return
 		}

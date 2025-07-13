@@ -59,7 +59,7 @@ func (r *badgeRepositoryImpl) Delete(ctx context.Context, id uuid.UUID) error {
 
 func (r *badgeRepositoryImpl) ListIssuedBadgesByUser(ctx context.Context, userID uuid.UUID) ([]model.IssuedBadge, error) {
 	var badges []model.IssuedBadge
-	err := r.db.WithContext(ctx).Table("badges").Where("user_id = ?", userID).Find(&badges).Error
+	err := r.db.WithContext(ctx).Table("issued_badges").Where("user_id = ?", userID).Find(&badges).Error
 	return badges, err
 }
 
