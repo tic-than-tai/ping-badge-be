@@ -31,7 +31,7 @@ type UserStatisticsResponse struct {
 }
 
 func (api *UserStatisticsAPI) GetUserStatistics(c *gin.Context) {
-	userIDStr := c.Param("user_id")
+	userIDStr := c.Param("id")
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
