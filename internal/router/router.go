@@ -91,13 +91,13 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 		protected.DELETE("/organizations/:id/admins/:admin_id", orgAdminAPI.DeleteAdmin)
 
 		// Badge routes (use BadgeAPI)
-		protected.POST("/organizations/:org_id/badges", badgeAPI.CreateBadge)
+		protected.POST("/organizations/:id/badges", badgeAPI.CreateBadge)
 		protected.PUT("/badges/:id", badgeAPI.UpdateBadge)
 		protected.DELETE("/badges/:id", badgeAPI.DeleteBadge)
 		// protected.POST("/badges/:id/issue", badgeAPI.IssueBadge) // Add to BadgeAPI if needed
 
 		// Activity routes (use ActivityAPI)
-		protected.POST("/organizations/:org_id/activities", activityAPI.CreateActivity)
+		protected.POST("/organizations/:id/activities", activityAPI.CreateActivity)
 		protected.PUT("/activities/:id", activityAPI.UpdateActivity)
 		protected.DELETE("/activities/:id", activityAPI.DeleteActivity)
 		// Add join and participations endpoints to ActivityAPI as needed
