@@ -41,9 +41,9 @@ type Organization struct {
 	BaseModel
 
 	// Relationships
-	Owner  User                   `json:"owner,omitempty" gorm:"foreignKey:UserIDOwner"`
-	Admins []OrganizationAdmin    `json:"admins,omitempty"`
-	Badges []Badge                `json:"badges,omitempty"`
+	Owner  User                   `gorm:"-"`
+	Admins []OrganizationAdmin    `gorm:"-"`
+	Badges []Badge                `gorm:"-"`
 }
 
 // OrganizationAdmin represents the organization_admins table
@@ -55,8 +55,8 @@ type OrganizationAdmin struct {
 	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime"`
 
 	// Relationships
-	Organization Organization `json:"organization,omitempty" gorm:"foreignKey:OrgID"`
-	User         User         `json:"user,omitempty" gorm:"foreignKey:UserID"`
+	Organization Organization `gorm:"-"`
+	User         User         `gorm:"-"`
 }
 
 // Badge represents the badges table
@@ -73,10 +73,10 @@ type Badge struct {
 	BaseModel
 
 	// Relationships
-	Organization Organization     `json:"organization,omitempty" gorm:"foreignKey:OrgID"`
-	IssuedBadges []IssuedBadge    `json:"issued_badges,omitempty"`
-	Activities   []Activity       `json:"activities,omitempty"`
-	Progress     []UserBadgeProgress `json:"progress,omitempty"`
+	Organization Organization     `gorm:"-"`
+	IssuedBadges []IssuedBadge    `gorm:"-"`
+	Activities   []Activity       `gorm:"-"`
+	Progress     []UserBadgeProgress `gorm:"-"`
 }
 
 // IssuedBadge represents the issued_badges table
@@ -96,10 +96,10 @@ type IssuedBadge struct {
 	BlockchainTxID               *string                `json:"blockchain_tx_id" gorm:"type:varchar(255)"`
 
 	// Relationships
-	Badge        Badge        `json:"badge,omitempty" gorm:"foreignKey:BadgeDefID"`
-	User         User         `json:"user,omitempty" gorm:"foreignKey:UserID"`
-	Organization Organization `json:"organization,omitempty" gorm:"foreignKey:OrgID"`
-	Views        []BadgeView  `json:"views,omitempty"`
+	Badge        Badge        `gorm:"-"`
+	User         User         `gorm:"-"`
+	Organization Organization `gorm:"-"`
+	Views        []BadgeView  `gorm:"-"`
 }
 
 // UserBadgeProgress represents the user_badge_progress table
@@ -113,8 +113,8 @@ type UserBadgeProgress struct {
 	LastUpdated   time.Time `json:"last_updated" gorm:"autoUpdateTime"`
 
 	// Relationships
-	User  User  `json:"user,omitempty" gorm:"foreignKey:UserID"`
-	Badge Badge `json:"badge,omitempty" gorm:"foreignKey:BadgeDefID"`
+	User  User  `gorm:"-"`
+	Badge Badge `gorm:"-"`
 }
 
 // Activity represents the activities table
@@ -130,9 +130,9 @@ type Activity struct {
 	BaseModel
 
 	// Relationships
-	Organization   Organization            `json:"organization,omitempty" gorm:"foreignKey:OrgID"`
-	Badge          *Badge                  `json:"badge,omitempty" gorm:"foreignKey:BadgeDefID"`
-	Participations []ActivityParticipation `json:"participations,omitempty"`
+	Organization   Organization            `gorm:"-"`
+	Badge          *Badge                  `gorm:"-"`
+	Participations []ActivityParticipation `gorm:"-"`
 }
 
 // ActivityParticipation represents the activity_participation table
@@ -146,9 +146,9 @@ type ActivityParticipation struct {
 	CreatedAt               time.Time    `json:"created_at" gorm:"autoCreateTime"`
 
 	// Relationships
-	Activity    Activity     `json:"activity,omitempty" gorm:"foreignKey:ActivityID"`
-	User        User         `json:"user,omitempty" gorm:"foreignKey:UserID"`
-	IssuedBadge *IssuedBadge `json:"issued_badge,omitempty" gorm:"foreignKey:IssuedBadgeID"`
+	Activity    Activity     `gorm:"-"`
+	User        User         `gorm:"-"`
+	IssuedBadge *IssuedBadge `gorm:"-"`
 }
 
 // BadgeView represents the badge_views table
@@ -159,5 +159,5 @@ type BadgeView struct {
 	ViewTimestamp     time.Time `json:"view_timestamp" gorm:"autoCreateTime"`
 
 	// Relationships
-	IssuedBadge IssuedBadge `json:"issued_badge,omitempty" gorm:"foreignKey:IssuedBadgeID"`
+	IssuedBadge IssuedBadge `gorm:"-"`
 }

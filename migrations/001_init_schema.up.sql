@@ -19,114 +19,189 @@ CREATE TABLE users (
 
 -- Organizations table
 CREATE TABLE organizations (
-    org_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    org_name VARCHAR(255) UNIQUE NOT NULL,
-    org_email VARCHAR(100) UNIQUE NOT NULL,
-    org_logo_url VARCHAR(255),
-    user_id_owner UUID REFERENCES users(user_id),
+    organization_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(100) UNIQUE NOT NULL,
     description TEXT,
+    logo_url VARCHAR(255),
     website_url VARCHAR(255),
-    is_verified BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
     deleted_at TIMESTAMP
 );
 
--- Organization admins table
-CREATE TABLE organization_admins (
-    admin_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    org_id UUID NOT NULL REFERENCES organizations(org_id) ON DELETE CASCADE,
-    user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    role VARCHAR(50) NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW(),
-    UNIQUE(org_id, user_id)
-);
-
--- Badges table
-CREATE TABLE badges (
-    badge_def_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    org_id UUID NOT NULL REFERENCES organizations(org_id) ON DELETE CASCADE,
-    badge_name VARCHAR(100) NOT NULL,
+-- Events table
+CREATE TABLE events (
+    event_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    organizer_id UUID,
+    title VARCHAR(100) NOT NULL,
     description TEXT,
-    image_url VARCHAR(255) NOT NULL,
-    criteria TEXT,
-    badge_type VARCHAR(20) NOT NULL DEFAULT 'instant' CHECK (badge_type IN ('instant', 'cumulative')),
-    rule_config JSONB,
-    is_active BOOLEAN DEFAULT TRUE,
+    location VARCHAR(255),
+    start_time TIMESTAMP NOT NULL,
+    end_time TIMESTAMP NOT NULL,
+    privacy_setting VARCHAR(20) DEFAULT 'public',
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
-    deleted_at TIMESTAMP,
-    UNIQUE(org_id, badge_name)
+    deleted_at TIMESTAMP
 );
 
--- Issued badges table
-CREATE TABLE issued_badges (
-    issued_badge_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    badge_def_id UUID NOT NULL REFERENCES badges(badge_def_id) ON DELETE CASCADE,
-    user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    org_id UUID NOT NULL REFERENCES organizations(org_id) ON DELETE CASCADE,
-    issue_date TIMESTAMP DEFAULT NOW(),
-    verification_code VARCHAR(255) UNIQUE NOT NULL,
-    source_type VARCHAR(50),
-    source_id UUID,
-    cumulative_progress_at_issuance NUMERIC,
-    cumulative_unit VARCHAR(50),
-    additional_data JSONB,
-    status VARCHAR(20) DEFAULT 'issued',
-    blockchain_tx_id VARCHAR(255)
+-- Tickets table
+CREATE TABLE tickets (
+    ticket_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    event_id UUID,
+    user_id UUID,
+    ticket_type VARCHAR(50) NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    quantity_available INT NOT NULL,
+    quantity_sold INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    deleted_at TIMESTAMP
 );
 
--- User badge progress table
-CREATE TABLE user_badge_progress (
-    progress_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    badge_def_id UUID NOT NULL REFERENCES badges(badge_def_id) ON DELETE CASCADE,
-    progress_value NUMERIC DEFAULT 0,
-    unit VARCHAR(50),
-    is_qualified BOOLEAN DEFAULT FALSE,
-    last_updated TIMESTAMP DEFAULT NOW(),
-    UNIQUE(user_id, badge_def_id)
+-- Orders table
+CREATE TABLE orders (
+    order_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID,
+    total_amount DECIMAL(10, 2) NOT NULL,
+    order_status VARCHAR(20) DEFAULT 'PENDING' CHECK (order_status IN ('PENDING', 'COMPLETED', 'CANCELLED')),
+    payment_method VARCHAR(50),
+    payment_status VARCHAR(20) DEFAULT 'PENDING' CHECK (payment_status IN ('PENDING', 'PAID', 'FAILED')),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    deleted_at TIMESTAMP
 );
 
--- Activities table
-CREATE TABLE activities (
-    activity_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    org_id UUID NOT NULL REFERENCES organizations(org_id) ON DELETE CASCADE,
-    activity_name VARCHAR(255) NOT NULL,
-    description TEXT,
+-- Order_Items table
+CREATE TABLE order_items (
+    order_item_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_id UUID,
+    ticket_id UUID,
+    quantity INT NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    deleted_at TIMESTAMP
+);
+
+-- Notifications table
+CREATE TABLE notifications (
+    notification_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID,
+    content TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    deleted_at TIMESTAMP
+);
+
+-- Messages table
+CREATE TABLE messages (
+    message_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    sender_id UUID,
+    receiver_id UUID,
+    content TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    deleted_at TIMESTAMP
+);
+
+-- Reviews table
+CREATE TABLE reviews (
+    review_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    event_id UUID,
+    user_id UUID,
+    rating INT CHECK (rating >= 1 AND rating <= 5),
+    comment TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    deleted_at TIMESTAMP
+);
+
+-- Wishlists table
+CREATE TABLE wishlists (
+    wishlist_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID,
+    event_id UUID,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    deleted_at TIMESTAMP
+);
+
+-- Coupons table
+CREATE TABLE coupons (
+    coupon_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    code VARCHAR(50) UNIQUE NOT NULL,
+    discount_type VARCHAR(20) CHECK (discount_type IN ('PERCENTAGE', 'FLAT_AMOUNT')),
+    discount_value DECIMAL(10, 2) NOT NULL,
+    min_order_amount DECIMAL(10, 2),
+    max_discount_amount DECIMAL(10, 2),
     start_date TIMESTAMP,
     end_date TIMESTAMP,
-    location VARCHAR(255),
-    badge_def_id UUID REFERENCES badges(badge_def_id),
+    usage_limit INT,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
     deleted_at TIMESTAMP
 );
 
--- Activity participation table
-CREATE TABLE activity_participation (
-    participation_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    activity_id UUID NOT NULL REFERENCES activities(activity_id) ON DELETE CASCADE,
-    user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    status VARCHAR(50) DEFAULT 'registered',
-    proof_of_participation_url VARCHAR(255),
-    issued_badge_id UUID UNIQUE REFERENCES issued_badges(issued_badge_id),
+-- Event_Images table
+CREATE TABLE event_images (
+    image_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    event_id UUID,
+    image_url VARCHAR(255) NOT NULL,
+    is_thumbnail BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    deleted_at TIMESTAMP
+);
+
+-- User_Events table (for RSVP functionality)
+CREATE TABLE user_events (
+    user_event_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID,
+    event_id UUID,
+    rsvp_status VARCHAR(20) DEFAULT 'NO_RESPONSE' CHECK (rsvp_status IN ('ACCEPTED', 'DECLINED', 'MAYBE', 'NO_RESPONSE')),
+    num_guests INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    deleted_at TIMESTAMP
+);
+
+-- Payment_Transactions table
+CREATE TABLE payment_transactions (
+    transaction_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_id UUID,
+    payment_date TIMESTAMP DEFAULT NOW(),
+    amount DECIMAL(10, 2) NOT NULL,
+    payment_method VARCHAR(50),
+    payment_status VARCHAR(20) DEFAULT 'PENDING' CHECK (payment_status IN ('PENDING', 'COMPLETED', 'FAILED')),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    deleted_at TIMESTAMP
+);
+
+-- Audit_Log table
+CREATE TABLE audit_log (
+    audit_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID,
+    action VARCHAR(255) NOT NULL,
+    table_name VARCHAR(255) NOT NULL,
+    record_id UUID NOT NULL,
+    old_values JSONB,
+    new_values JSONB,
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Badge views table
-CREATE TABLE badge_views (
-    view_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    issued_badge_id UUID NOT NULL REFERENCES issued_badges(issued_badge_id) ON DELETE CASCADE,
-    viewer_ip_address VARCHAR(45),
-    view_timestamp TIMESTAMP DEFAULT NOW()
+-- Organization_Admins table
+CREATE TABLE organization_admins (
+    admin_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID NOT NULL,
+    user_id UUID NOT NULL,
+    role VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Create indexes for better performance
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_users_username ON users(username);
-CREATE INDEX idx_issued_badges_user_badge ON issued_badges(user_id, badge_def_id);
-CREATE INDEX idx_issued_badges_org_badge ON issued_badges(org_id, badge_def_id);
-CREATE INDEX idx_user_badge_progress_user_badge ON user_badge_progress(user_id, badge_def_id);
-CREATE INDEX idx_activities_org_id ON activities(org_id);
-CREATE INDEX idx_activity_participation_activity_user ON activity_participation(activity_id, user_id);
+-- Create indexes for organization_admins
+CREATE INDEX idx_org_admins_org_id ON organization_admins(org_id);
+CREATE INDEX idx_org_admins_user_id ON organization_admins(user_id);
+CREATE UNIQUE INDEX idx_org_user ON organization_admins(org_id, user_id);
