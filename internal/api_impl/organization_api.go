@@ -48,10 +48,19 @@ func (api *OrganizationAPI) CreateOrganization(c *gin.Context) {
 
 // Alias for router: ListOrganizations
 func (api *OrganizationAPI) ListOrganizations(c *gin.Context) {
-	// Call the service to list organizations
+	userIDStr := c.Query("user_id")
+	var userID *uuid.UUID
+	if userIDStr != "" {
+		parsed, err := uuid.Parse(userIDStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+			return
+		}
+		userID = &parsed
+	}
 	offset := 0
 	limit := 10
-	orgs, err := api.service.ListOrganizations(context.Background(), offset, limit)
+	orgs, err := api.service.ListOrganizations(context.Background(), offset, limit, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch organizations"})
 		return

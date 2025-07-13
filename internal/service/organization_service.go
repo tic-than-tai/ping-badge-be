@@ -24,8 +24,8 @@ func (s *OrganizationService) GetOrganization(ctx context.Context, id uuid.UUID)
 	return s.repo.GetByID(ctx, id)
 }
 
-func (s *OrganizationService) ListOrganizations(ctx context.Context, offset, limit int) ([]model.Organization, error) {
-	return s.repo.List(ctx, offset, limit)
+func (s *OrganizationService) ListOrganizations(ctx context.Context, offset, limit int, userID *uuid.UUID) ([]model.Organization, error) {
+	return s.repo.List(ctx, offset, limit, userID)
 }
 
 func (s *OrganizationService) UpdateOrganization(ctx context.Context, org *model.Organization) error {

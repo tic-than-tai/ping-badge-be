@@ -29,9 +29,13 @@ func (r *OrganizationRepository) GetByID(ctx context.Context, id uuid.UUID) (*mo
 	return &org, nil
 }
 
-func (r *OrganizationRepository) List(ctx context.Context, offset, limit int) ([]model.Organization, error) {
+func (r *OrganizationRepository) List(ctx context.Context, offset, limit int, userID *uuid.UUID) ([]model.Organization, error) {
 	var orgs []model.Organization
-	err := r.db.WithContext(ctx).Offset(offset).Limit(limit).Find(&orgs).Error
+	query := r.db.WithContext(ctx)
+	if userID != nil {
+		query = query.Where("user_id_owner = ?", *userID)
+	}
+	err := query.Offset(offset).Limit(limit).Find(&orgs).Error
 	return orgs, err
 }
 
