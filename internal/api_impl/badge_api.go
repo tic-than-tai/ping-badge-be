@@ -30,6 +30,26 @@ type CreateBadgeRequest struct {
 
 func (api *BadgeAPI) ListBadges(c *gin.Context) {
 	orgID := c.Query("org_id")
+	userID := c.Query("user_id")
+
+	// If user_id is provided, return issued badges for that user
+	if userID != "" {
+		userUUID, err := uuid.Parse(userID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+			return
+		}
+
+		issuedBadges, err := api.service.ListIssuedBadgesByUser(context.Background(), userUUID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user badges"})
+			return
+		}
+		c.JSON(http.StatusOK, issuedBadges)
+		return
+	}
+
+	// Original logic for listing all badges by organization
 	var orgUUID *uuid.UUID
 	if orgID != "" {
 		parsed, err := uuid.Parse(orgID)

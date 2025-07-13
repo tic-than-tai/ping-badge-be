@@ -11,6 +11,7 @@ type ActivityRepository interface {
 	Create(activity *model.Activity) error
 	FindByID(activityID uuid.UUID) (*model.Activity, error)
 	FindAll(orgID *uuid.UUID, offset, limit int) ([]model.Activity, error)
+	FindByUser(userID uuid.UUID, offset, limit int) ([]model.Activity, error)
 	Update(activityID uuid.UUID, updates map[string]interface{}) (*model.Activity, error)
 	Delete(activityID uuid.UUID) error
 }
@@ -45,6 +46,18 @@ func (r *activityRepositoryImpl) FindAll(orgID *uuid.UUID, offset, limit int) ([
 		query = query.Where("org_id = ?", *orgID)
 	}
 	err := query.Offset(offset).Limit(limit).Find(&activities).Error
+	return activities, err
+}
+
+func (r *activityRepositoryImpl) FindByUser(userID uuid.UUID, offset, limit int) ([]model.Activity, error) {
+	var activities []model.Activity
+	// Join with activity_participation table to find activities the user has participated in
+	err := r.db.Table("activities").
+		Joins("JOIN activity_participation ON activities.activity_id = activity_participation.activity_id").
+		Where("activity_participation.user_id = ?", userID).
+		Offset(offset).
+		Limit(limit).
+		Find(&activities).Error
 	return activities, err
 }
 

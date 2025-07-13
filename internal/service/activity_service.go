@@ -12,6 +12,7 @@ type ActivityService interface {
 	CreateActivity(ctx context.Context, activity *model.Activity) error
 	GetActivity(ctx context.Context, id uuid.UUID) (*model.Activity, error)
 	ListActivities(ctx context.Context, orgID *uuid.UUID, offset, limit int) ([]model.Activity, error)
+	ListActivitiesByUser(ctx context.Context, userID uuid.UUID, offset, limit int) ([]model.Activity, error)
 	UpdateActivity(ctx context.Context, id uuid.UUID, updates map[string]interface{}) (*model.Activity, error)
 	DeleteActivity(ctx context.Context, id uuid.UUID) error
 }
@@ -37,6 +38,11 @@ func (s *activityServiceImpl) GetActivity(ctx context.Context, id uuid.UUID) (*m
 func (s *activityServiceImpl) ListActivities(ctx context.Context, orgID *uuid.UUID, offset, limit int) ([]model.Activity, error) {
 	// Add business logic, validation, authorization here
 	return s.repo.FindAll(orgID, offset, limit)
+}
+
+func (s *activityServiceImpl) ListActivitiesByUser(ctx context.Context, userID uuid.UUID, offset, limit int) ([]model.Activity, error) {
+	// Add business logic, validation, authorization here
+	return s.repo.FindByUser(userID, offset, limit)
 }
 
 func (s *activityServiceImpl) UpdateActivity(ctx context.Context, id uuid.UUID, updates map[string]interface{}) (*model.Activity, error) {

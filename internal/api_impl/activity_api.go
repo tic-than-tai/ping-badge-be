@@ -30,6 +30,38 @@ type CreateActivityRequest struct {
 
 func (api *ActivityAPI) ListActivities(c *gin.Context) {
 	orgID := c.Query("org_id")
+	userID := c.Query("user_id")
+	
+	// If user_id is provided, return activities that the user has participated in
+	if userID != "" {
+		userUUID, err := uuid.Parse(userID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+			return
+		}
+		
+		page := c.DefaultQuery("page", "1")
+		limit := c.DefaultQuery("limit", "10")
+		pageInt := 1
+		limitInt := 10
+		if p, err := strconv.Atoi(page); err == nil && p > 0 {
+			pageInt = p
+		}
+		if l, err := strconv.Atoi(limit); err == nil && l > 0 && l <= 100 {
+			limitInt = l
+		}
+		offset := (pageInt - 1) * limitInt
+		
+		activities, err := api.service.ListActivitiesByUser(context.Background(), userUUID, offset, limitInt)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user activities"})
+			return
+		}
+		c.JSON(http.StatusOK, activities)
+		return
+	}
+	
+	// Original logic for listing all activities by organization
 	var orgUUID *uuid.UUID
 	if orgID != "" {
 		parsed, err := uuid.Parse(orgID)
