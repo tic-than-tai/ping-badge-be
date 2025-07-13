@@ -13,6 +13,7 @@ type BadgeRepository interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*model.Badge, error)
 	List(ctx context.Context, orgID *uuid.UUID, offset, limit int) ([]model.Badge, error)
 	ListIssuedBadgesByUser(ctx context.Context, userID uuid.UUID) ([]model.IssuedBadge, error)
+	CreateIssuedBadge(ctx context.Context, issuedBadge *model.IssuedBadge) error
 	Update(ctx context.Context, badge *model.Badge) error
 	Delete(ctx context.Context, id uuid.UUID) error
 }
@@ -60,4 +61,8 @@ func (r *badgeRepositoryImpl) ListIssuedBadgesByUser(ctx context.Context, userID
 	var badges []model.IssuedBadge
 	err := r.db.WithContext(ctx).Where("user_id = ?", userID).Find(&badges).Error
 	return badges, err
+}
+
+func (r *badgeRepositoryImpl) CreateIssuedBadge(ctx context.Context, issuedBadge *model.IssuedBadge) error {
+	return r.db.WithContext(ctx).Create(issuedBadge).Error
 }

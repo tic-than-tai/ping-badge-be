@@ -10,7 +10,7 @@ import (
 type ActivityParticipationRepository interface {
 	Create(participation *model.ActivityParticipation) error
 	FindByID(id uuid.UUID) (*model.ActivityParticipation, error)
-	FindAll(activityID *uuid.UUID, userID *uuid.UUID, offset, limit int) ([]model.ActivityParticipation, error)
+	FindAll(activityID *uuid.UUID, userID *uuid.UUID, status *string, offset, limit int) ([]model.ActivityParticipation, error)
 	Update(id uuid.UUID, updates map[string]interface{}) (*model.ActivityParticipation, error)
 	Delete(id uuid.UUID) error
 }
@@ -36,7 +36,7 @@ func (r *activityParticipationRepositoryImpl) FindByID(id uuid.UUID) (*model.Act
 	return &participation, nil
 }
 
-func (r *activityParticipationRepositoryImpl) FindAll(activityID *uuid.UUID, userID *uuid.UUID, offset, limit int) ([]model.ActivityParticipation, error) {
+func (r *activityParticipationRepositoryImpl) FindAll(activityID *uuid.UUID, userID *uuid.UUID, status *string, offset, limit int) ([]model.ActivityParticipation, error) {
 	var participations []model.ActivityParticipation
 	query := r.db
 	if activityID != nil {
@@ -44,6 +44,9 @@ func (r *activityParticipationRepositoryImpl) FindAll(activityID *uuid.UUID, use
 	}
 	if userID != nil {
 		query = query.Where("user_id = ?", *userID)
+	}
+	if status != nil {
+		query = query.Where("status = ?", *status)
 	}
 	err := query.Offset(offset).Limit(limit).Find(&participations).Error
 	return participations, err

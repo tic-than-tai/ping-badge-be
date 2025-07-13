@@ -6,6 +6,7 @@ import (
 	"ping-badge-be/internal/model"
 	"ping-badge-be/internal/service"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -31,7 +32,11 @@ type CreateParticipationRequest struct {
 func (api *ActivityParticipationAPI) ListParticipations(c *gin.Context) {
 	activityID := c.Query("activity_id")
 	userID := c.Query("user_id")
+	status := c.Query("status")
+	
 	var activityUUID, userUUID *uuid.UUID
+	var statusPtr *string
+	
 	if activityID != "" {
 		parsed, err := uuid.Parse(activityID)
 		if err != nil {
@@ -48,6 +53,7 @@ func (api *ActivityParticipationAPI) ListParticipations(c *gin.Context) {
 		}
 		userUUID = &parsed
 	}
+	
 	page := c.DefaultQuery("page", "1")
 	limit := c.DefaultQuery("limit", "10")
 	pageInt := 1
@@ -59,7 +65,7 @@ func (api *ActivityParticipationAPI) ListParticipations(c *gin.Context) {
 		limitInt = l
 	}
 	offset := (pageInt - 1) * limitInt
-	participations, err := api.service.ListParticipations(context.Background(), activityUUID, userUUID, offset, limitInt)
+	participations, err := api.service.ListParticipations(context.Background(), activityUUID, userUUID, statusPtr, offset, limitInt)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch participations"})
 		return
@@ -226,4 +232,41 @@ func (api *ActivityParticipationAPI) UploadEvidence(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, updated)
+}
+
+type UpdateParticipationStatusRequest struct {
+	ProofOfParticipationURL *string `json:"proof_of_participation_url"`
+	Status                  string  `json:"status" binding:"required"`
+}
+
+func (api *ActivityParticipationAPI) UpdateParticipationStatus(c *gin.Context) {
+	id := c.Param("id")
+	participationID, err := uuid.Parse(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid participation ID"})
+		return
+	}
+
+	var req UpdateParticipationStatusRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	participation, err := api.service.UpdateParticipationWithBadgeCreation(
+		context.Background(),
+		participationID,
+		req.ProofOfParticipationURL,
+		strings.ToUpper(req.Status),
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update participation status"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":      "Participation updated successfully",
+		"participation": participation,
+		"badge_created": req.Status == "completed" || req.Status == "COMPLETED",
+	})
 }

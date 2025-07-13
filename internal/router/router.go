@@ -111,8 +111,11 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 		// Add join and participations endpoints to ActivityAPI as needed
 
 		// ActivityParticipation routes
+		protected.GET("/participations", activityParticipationAPI.ListParticipations)
+		protected.GET("/participations/:id", activityParticipationAPI.GetParticipation)
 		protected.POST("/activities/:activity_id/participations", activityParticipationAPI.CreateParticipation)
 		protected.PUT("/participations/:id/evidence", activityParticipationAPI.UploadEvidence)
+		protected.PUT("/participations/:id/status", activityParticipationAPI.UpdateParticipationStatus)
 
 		// User statistics route
 		protected.GET("/users/:id/statistics", userStatisticsAPI.GetUserStatistics)
