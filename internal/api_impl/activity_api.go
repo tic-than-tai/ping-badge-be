@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"ping-badge-be/internal/model"
+	"ping-badge-be/internal/repository"
 	"ping-badge-be/internal/service"
 	"strconv"
 
@@ -12,11 +13,24 @@ import (
 )
 
 type ActivityAPI struct {
-	service service.ActivityService
+	service              service.ActivityService
+	organizationRepo     *repository.OrganizationRepository
+	badgeRepo            repository.BadgeRepository
+	participationService service.ActivityParticipationService
 }
 
-func NewActivityAPI(service service.ActivityService) *ActivityAPI {
-	return &ActivityAPI{service: service}
+func NewActivityAPI(
+	service service.ActivityService,
+	organizationRepo *repository.OrganizationRepository,
+	badgeRepo repository.BadgeRepository,
+	participationService service.ActivityParticipationService,
+) *ActivityAPI {
+	return &ActivityAPI{
+		service:              service,
+		organizationRepo:     organizationRepo,
+		badgeRepo:            badgeRepo,
+		participationService: participationService,
+	}
 }
 
 type CreateActivityRequest struct {
@@ -31,7 +45,7 @@ type CreateActivityRequest struct {
 func (api *ActivityAPI) ListActivities(c *gin.Context) {
 	orgID := c.Query("org_id")
 	userID := c.Query("user_id")
-	
+
 	// If user_id is provided, return activities that the user has participated in
 	if userID != "" {
 		userUUID, err := uuid.Parse(userID)
@@ -39,7 +53,7 @@ func (api *ActivityAPI) ListActivities(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 			return
 		}
-		
+
 		page := c.DefaultQuery("page", "1")
 		limit := c.DefaultQuery("limit", "10")
 		pageInt := 1
@@ -51,7 +65,7 @@ func (api *ActivityAPI) ListActivities(c *gin.Context) {
 			limitInt = l
 		}
 		offset := (pageInt - 1) * limitInt
-		
+
 		activities, err := api.service.ListActivitiesByUser(context.Background(), userUUID, offset, limitInt)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user activities"})
@@ -60,7 +74,7 @@ func (api *ActivityAPI) ListActivities(c *gin.Context) {
 		c.JSON(http.StatusOK, activities)
 		return
 	}
-	
+
 	// Original logic for listing all activities by organization
 	var orgUUID *uuid.UUID
 	if orgID != "" {
@@ -98,11 +112,35 @@ func (api *ActivityAPI) GetActivity(c *gin.Context) {
 		return
 	}
 	activity, err := api.service.GetActivity(context.Background(), id)
-	if err != nil {
+	if err != nil || activity == nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Activity not found"})
 		return
 	}
-	c.JSON(http.StatusOK, activity)
+
+	// Fetch Organization
+	var organization *model.Organization
+	if api.organizationRepo != nil {
+		organization, _ = api.organizationRepo.GetByID(context.Background(), activity.OrgID)
+	}
+
+	// Fetch Badge
+	var badge *model.Badge
+	if activity.BadgeDefID != nil && api.badgeRepo != nil {
+		badge, _ = api.badgeRepo.GetByID(context.Background(), *activity.BadgeDefID)
+	}
+
+	// Fetch Participations
+	var participations []model.ActivityParticipation
+	if api.participationService != nil {
+		participations, _ = api.participationService.ListParticipations(context.Background(), &activity.ActivityID, nil, nil, 0, 100)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"activity":       activity,
+		"organization":   organization,
+		"badge":          badge,
+		"participations": participations,
+	})
 }
 
 func (api *ActivityAPI) CreateActivity(c *gin.Context) {
