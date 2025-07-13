@@ -113,8 +113,8 @@ func (api *BadgeAPI) CreateBadge(c *gin.Context) {
 		ImageURL:    req.ImageURL,
 		Criteria:    &req.Criteria,
 		BadgeType:   req.BadgeType,
-		RuleConfig:  req.RuleConfig,
-		IsActive:    true,
+		// RuleConfig:  req.RuleConfig,
+		IsActive: true,
 	}
 	err = api.service.CreateBadge(context.Background(), badge)
 	if err != nil {
@@ -146,7 +146,7 @@ func (api *BadgeAPI) UpdateBadge(c *gin.Context) {
 	badge.ImageURL = req.ImageURL
 	badge.Criteria = &req.Criteria
 	badge.BadgeType = req.BadgeType
-	badge.RuleConfig = req.RuleConfig
+	//badge.RuleConfig = req.RuleConfig
 	err = api.service.UpdateBadge(context.Background(), badge)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update badge"})
