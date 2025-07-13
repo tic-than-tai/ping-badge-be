@@ -38,7 +38,7 @@ func (r *activityParticipationRepositoryImpl) FindByID(id uuid.UUID) (*model.Act
 
 func (r *activityParticipationRepositoryImpl) FindAll(activityID *uuid.UUID, userID *uuid.UUID, status *string, offset, limit int) ([]model.ActivityParticipation, error) {
 	var participations []model.ActivityParticipation
-	query := r.db
+	query := r.db.Table("activity_participation")
 	if activityID != nil {
 		query = query.Where("activity_id = ?", *activityID)
 	}

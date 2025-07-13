@@ -39,7 +39,7 @@ func (r *organizationAdminRepositoryImpl) GetByID(ctx context.Context, id uuid.U
 
 func (r *organizationAdminRepositoryImpl) List(ctx context.Context, offset, limit int) ([]model.OrganizationAdmin, error) {
 	var admins []model.OrganizationAdmin
-	err := r.db.WithContext(ctx).Offset(offset).Limit(limit).Find(&admins).Error
+	err := r.db.WithContext(ctx).Table("organization_admins").Offset(offset).Limit(limit).Find(&admins).Error
 	return admins, err
 }
 

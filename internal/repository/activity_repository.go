@@ -43,7 +43,7 @@ func (r *activityRepositoryImpl) FindAll(orgID *uuid.UUID, offset, limit int) ([
 	var activities []model.Activity
 	query := r.db
 	if orgID != nil {
-		query = query.Where("org_id = ?", *orgID)
+		query = query.Table("activities").Where("org_id = ?", *orgID)
 	}
 	err := query.Offset(offset).Limit(limit).Find(&activities).Error
 	return activities, err

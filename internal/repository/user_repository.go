@@ -39,7 +39,7 @@ func (r *userRepositoryImpl) FindByEmail(ctx context.Context, email string) (*mo
 
 func (r *userRepositoryImpl) FindByEmailOrUsername(ctx context.Context, email, username string) (*model.User, error) {
 	var user model.User
-	err := r.db.WithContext(ctx).Where("email = ? OR username = ?", email, username).First(&user).Error
+	err := r.db.WithContext(ctx).Table("users").Where("email = ? OR username = ?", email, username).First(&user).Error
 	if err != nil {
 		return nil, err
 	}

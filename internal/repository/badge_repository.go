@@ -41,7 +41,7 @@ func (r *badgeRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*model
 
 func (r *badgeRepositoryImpl) List(ctx context.Context, orgID *uuid.UUID, offset, limit int) ([]model.Badge, error) {
 	var badges []model.Badge
-	query := r.db.WithContext(ctx)
+	query := r.db.WithContext(ctx).Table("badges")
 	if orgID != nil {
 		query = query.Where("org_id = ?", *orgID)
 	}
@@ -50,7 +50,7 @@ func (r *badgeRepositoryImpl) List(ctx context.Context, orgID *uuid.UUID, offset
 }
 
 func (r *badgeRepositoryImpl) Update(ctx context.Context, badge *model.Badge) error {
-	return r.db.WithContext(ctx).Save(badge).Error
+	return r.db.WithContext(ctx).Table("badges").Save(badge).Error
 }
 
 func (r *badgeRepositoryImpl) Delete(ctx context.Context, id uuid.UUID) error {
@@ -59,7 +59,7 @@ func (r *badgeRepositoryImpl) Delete(ctx context.Context, id uuid.UUID) error {
 
 func (r *badgeRepositoryImpl) ListIssuedBadgesByUser(ctx context.Context, userID uuid.UUID) ([]model.IssuedBadge, error) {
 	var badges []model.IssuedBadge
-	err := r.db.WithContext(ctx).Where("user_id = ?", userID).Find(&badges).Error
+	err := r.db.WithContext(ctx).Table("badges").Where("user_id = ?", userID).Find(&badges).Error
 	return badges, err
 }
 

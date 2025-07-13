@@ -33,7 +33,7 @@ func (r *OrganizationRepository) List(ctx context.Context, offset, limit int, us
 	var orgs []model.Organization
 	query := r.db.WithContext(ctx)
 	if userID != nil {
-		query = query.Where("user_id_owner = ?", *userID)
+		query = query.Table("organizations").Where("user_id_owner = ?", *userID)
 	}
 	err := query.Offset(offset).Limit(limit).Find(&orgs).Error
 	return orgs, err
