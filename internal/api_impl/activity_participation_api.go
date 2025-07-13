@@ -155,3 +155,75 @@ func (api *ActivityParticipationAPI) DeleteParticipation(c *gin.Context) {
 	}
 	c.JSON(http.StatusNoContent, nil)
 }
+
+type UploadEvidenceRequest struct {
+	ProofOfParticipationURL string `json:"proof_of_participation_url" binding:"required"`
+}
+
+func (api *ActivityParticipationAPI) UploadEvidence(c *gin.Context) {
+	participationIDStr := c.Param("id")
+	userIDStr := c.Query("user_id")
+	activityIDStr := c.Query("activity_id")
+
+	var participationID *uuid.UUID
+	if participationIDStr != "" {
+		parsed, err := uuid.Parse(participationIDStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid participation ID"})
+			return
+		}
+		participationID = &parsed
+	}
+	var userID *uuid.UUID
+	if userIDStr != "" {
+		parsed, err := uuid.Parse(userIDStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+			return
+		}
+		userID = &parsed
+	}
+	var activityID *uuid.UUID
+	if activityIDStr != "" {
+		parsed, err := uuid.Parse(activityIDStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid activity ID"})
+			return
+		}
+		activityID = &parsed
+	}
+
+	var req UploadEvidenceRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Find participation by filters
+	var participation *model.ActivityParticipation
+	var err error
+	if participationID != nil {
+		participation, err = api.service.GetParticipation(context.Background(), *participationID)
+	} else {
+		participations, err := api.service.ListParticipations(context.Background(), activityID, userID, 0, 1)
+		if err != nil || len(participations) == 0 {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Participation not found"})
+			return
+		}
+		participation = &participations[0]
+	}
+	if err != nil || participation == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Participation not found"})
+		return
+	}
+
+	updates := map[string]interface{}{
+		"proof_of_participation_url": req.ProofOfParticipationURL,
+	}
+	updated, err := api.service.UpdateParticipation(context.Background(), participation.ParticipationID, updates)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload evidence"})
+		return
+	}
+	c.JSON(http.StatusOK, updated)
+}
