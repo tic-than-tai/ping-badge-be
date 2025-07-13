@@ -12,6 +12,7 @@ type BadgeService interface {
 	CreateBadge(ctx context.Context, badge *model.Badge) error
 	GetBadge(ctx context.Context, id uuid.UUID) (*model.Badge, error)
 	ListBadges(ctx context.Context, orgID *uuid.UUID, offset, limit int) ([]model.Badge, error)
+	ListIssuedBadgesByUser(ctx context.Context, userID uuid.UUID) ([]model.IssuedBadge, error)
 	UpdateBadge(ctx context.Context, badge *model.Badge) error
 	DeleteBadge(ctx context.Context, id uuid.UUID) error
 }
@@ -47,4 +48,8 @@ func (s *badgeServiceImpl) UpdateBadge(ctx context.Context, badge *model.Badge) 
 func (s *badgeServiceImpl) DeleteBadge(ctx context.Context, id uuid.UUID) error {
 	// Add business logic, validation, authorization here
 	return s.repo.Delete(ctx, id)
+}
+
+func (s *badgeServiceImpl) ListIssuedBadgesByUser(ctx context.Context, userID uuid.UUID) ([]model.IssuedBadge, error) {
+	return s.repo.ListIssuedBadgesByUser(ctx, userID)
 }

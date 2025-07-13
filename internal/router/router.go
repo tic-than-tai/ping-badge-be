@@ -45,6 +45,11 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	activityService := service.NewActivityService(activityRepo)
 	activityAPI := api_impl.NewActivityAPI(activityService)
 
+	// Initialize UserStatistics API (layered architecture)
+	participationRepo := repository.NewActivityParticipationRepository(db)
+	participationService := service.NewActivityParticipationService(participationRepo)
+	userStatisticsAPI := api_impl.NewUserStatisticsAPI(badgeService, activityService, participationService)
+
 	// Public routes
 	api := r.Group("/api/v1")
 	{
@@ -101,6 +106,9 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 		protected.PUT("/activities/:id", activityAPI.UpdateActivity)
 		protected.DELETE("/activities/:id", activityAPI.DeleteActivity)
 		// Add join and participations endpoints to ActivityAPI as needed
+
+		// User statistics route
+		protected.GET("/users/:id/statistics", userStatisticsAPI.GetUserStatistics)
 
 		// Auth protected routes
 		protected.GET("/auth/profile", authAPI.GetProfile)
