@@ -8,19 +8,27 @@ import (
 	"gorm.io/gorm"
 )
 
-type BadgeRepository struct {
+type BadgeRepository interface {
+	Create(ctx context.Context, badge *model.Badge) error
+	GetByID(ctx context.Context, id uuid.UUID) (*model.Badge, error)
+	List(ctx context.Context, orgID *uuid.UUID, offset, limit int) ([]model.Badge, error)
+	Update(ctx context.Context, badge *model.Badge) error
+	Delete(ctx context.Context, id uuid.UUID) error
+}
+
+type badgeRepositoryImpl struct {
 	db *gorm.DB
 }
 
-func NewBadgeRepository(db *gorm.DB) *BadgeRepository {
-	return &BadgeRepository{db: db}
+func NewBadgeRepository(db *gorm.DB) BadgeRepository {
+	return &badgeRepositoryImpl{db: db}
 }
 
-func (r *BadgeRepository) Create(ctx context.Context, badge *model.Badge) error {
+func (r *badgeRepositoryImpl) Create(ctx context.Context, badge *model.Badge) error {
 	return r.db.WithContext(ctx).Create(badge).Error
 }
 
-func (r *BadgeRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.Badge, error) {
+func (r *badgeRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*model.Badge, error) {
 	var badge model.Badge
 	err := r.db.WithContext(ctx).First(&badge, "badge_def_id = ?", id).Error
 	if err != nil {
@@ -29,7 +37,7 @@ func (r *BadgeRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.Bad
 	return &badge, nil
 }
 
-func (r *BadgeRepository) List(ctx context.Context, orgID *uuid.UUID, offset, limit int) ([]model.Badge, error) {
+func (r *badgeRepositoryImpl) List(ctx context.Context, orgID *uuid.UUID, offset, limit int) ([]model.Badge, error) {
 	var badges []model.Badge
 	query := r.db.WithContext(ctx)
 	if orgID != nil {
@@ -39,10 +47,10 @@ func (r *BadgeRepository) List(ctx context.Context, orgID *uuid.UUID, offset, li
 	return badges, err
 }
 
-func (r *BadgeRepository) Update(ctx context.Context, badge *model.Badge) error {
+func (r *badgeRepositoryImpl) Update(ctx context.Context, badge *model.Badge) error {
 	return r.db.WithContext(ctx).Save(badge).Error
 }
 
-func (r *BadgeRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (r *badgeRepositoryImpl) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.db.WithContext(ctx).Delete(&model.Badge{}, "badge_def_id = ?", id).Error
 }

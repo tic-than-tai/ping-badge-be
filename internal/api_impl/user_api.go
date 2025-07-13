@@ -3,20 +3,20 @@ package api_impl
 import (
 	"context"
 	"net/http"
-	"strconv"
-
+	"ping-badge-be/internal/constant"
 	"ping-badge-be/internal/model"
 	"ping-badge-be/internal/service"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 type UserAPI struct {
-	service *service.UserService
+	service service.UserService
 }
 
-func NewUserAPI(service *service.UserService) *UserAPI {
+func NewUserAPI(service service.UserService) *UserAPI {
 	return &UserAPI{service: service}
 }
 
@@ -49,26 +49,6 @@ func (api *UserAPI) CreateUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, user)
 }
 
-func (api *UserAPI) GetUsers(c *gin.Context) {
-	page := c.DefaultQuery("page", "1")
-	limit := c.DefaultQuery("limit", "10")
-	pageInt, _ := strconv.Atoi(page)
-	limitInt, _ := strconv.Atoi(limit)
-	if pageInt < 1 {
-		pageInt = 1
-	}
-	if limitInt < 1 || limitInt > 100 {
-		limitInt = 10
-	}
-	offset := (pageInt - 1) * limitInt
-	users, err := api.service.ListUsers(context.Background(), offset, limitInt)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch users"})
-		return
-	}
-	c.JSON(http.StatusOK, users)
-}
-
 func (api *UserAPI) GetUser(c *gin.Context) {
 	userID := c.Param("id")
 	id, err := uuid.Parse(userID)
@@ -82,6 +62,27 @@ func (api *UserAPI) GetUser(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, user)
+}
+
+func (api *UserAPI) ListUsers(c *gin.Context) {
+	// Parse pagination parameters
+	page := c.DefaultQuery("page", strconv.Itoa(constant.DefaultPage))
+	limit := c.DefaultQuery("limit", strconv.Itoa(constant.DefaultLimit))
+	pageInt, _ := strconv.Atoi(page)
+	limitInt, _ := strconv.Atoi(limit)
+	if pageInt < 1 {
+		pageInt = constant.DefaultPage
+	}
+	if limitInt < 1 || limitInt > constant.MaxLimit {
+		limitInt = constant.DefaultLimit
+	}
+	offset := (pageInt - 1) * limitInt
+	users, err := api.service.ListUsers(context.Background(), offset, limitInt)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch users"})
+		return
+	}
+	c.JSON(http.StatusOK, users)
 }
 
 func (api *UserAPI) UpdateUser(c *gin.Context) {

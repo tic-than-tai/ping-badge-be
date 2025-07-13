@@ -8,30 +8,43 @@ import (
 	"github.com/google/uuid"
 )
 
-type BadgeService struct {
-	repo *repository.BadgeRepository
+type BadgeService interface {
+	CreateBadge(ctx context.Context, badge *model.Badge) error
+	GetBadge(ctx context.Context, id uuid.UUID) (*model.Badge, error)
+	ListBadges(ctx context.Context, orgID *uuid.UUID, offset, limit int) ([]model.Badge, error)
+	UpdateBadge(ctx context.Context, badge *model.Badge) error
+	DeleteBadge(ctx context.Context, id uuid.UUID) error
 }
 
-func NewBadgeService(repo *repository.BadgeRepository) *BadgeService {
-	return &BadgeService{repo: repo}
+type badgeServiceImpl struct {
+	repo repository.BadgeRepository
 }
 
-func (s *BadgeService) CreateBadge(ctx context.Context, badge *model.Badge) error {
+func NewBadgeService(repo repository.BadgeRepository) BadgeService {
+	return &badgeServiceImpl{repo: repo}
+}
+
+func (s *badgeServiceImpl) CreateBadge(ctx context.Context, badge *model.Badge) error {
+	// Add business logic, validation, authorization here
 	return s.repo.Create(ctx, badge)
 }
 
-func (s *BadgeService) GetBadge(ctx context.Context, id uuid.UUID) (*model.Badge, error) {
+func (s *badgeServiceImpl) GetBadge(ctx context.Context, id uuid.UUID) (*model.Badge, error) {
+	// Add business logic, validation, authorization here
 	return s.repo.GetByID(ctx, id)
 }
 
-func (s *BadgeService) ListBadges(ctx context.Context, orgID *uuid.UUID, offset, limit int) ([]model.Badge, error) {
+func (s *badgeServiceImpl) ListBadges(ctx context.Context, orgID *uuid.UUID, offset, limit int) ([]model.Badge, error) {
+	// Add business logic, validation, authorization here
 	return s.repo.List(ctx, orgID, offset, limit)
 }
 
-func (s *BadgeService) UpdateBadge(ctx context.Context, badge *model.Badge) error {
+func (s *badgeServiceImpl) UpdateBadge(ctx context.Context, badge *model.Badge) error {
+	// Add business logic, validation, authorization here
 	return s.repo.Update(ctx, badge)
 }
 
-func (s *BadgeService) DeleteBadge(ctx context.Context, id uuid.UUID) error {
+func (s *badgeServiceImpl) DeleteBadge(ctx context.Context, id uuid.UUID) error {
+	// Add business logic, validation, authorization here
 	return s.repo.Delete(ctx, id)
 }

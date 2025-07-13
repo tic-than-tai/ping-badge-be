@@ -8,19 +8,27 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserRepository struct {
+type UserRepository interface {
+	Create(ctx context.Context, user *model.User) error
+	GetByID(ctx context.Context, id uuid.UUID) (*model.User, error)
+	List(ctx context.Context, offset, limit int) ([]model.User, error)
+	Update(ctx context.Context, user *model.User) error
+	Delete(ctx context.Context, id uuid.UUID) error
+}
+
+type userRepositoryImpl struct {
 	db *gorm.DB
 }
 
-func NewUserRepository(db *gorm.DB) *UserRepository {
-	return &UserRepository{db: db}
+func NewUserRepository(db *gorm.DB) UserRepository {
+	return &userRepositoryImpl{db: db}
 }
 
-func (r *UserRepository) Create(ctx context.Context, user *model.User) error {
+func (r *userRepositoryImpl) Create(ctx context.Context, user *model.User) error {
 	return r.db.WithContext(ctx).Create(user).Error
 }
 
-func (r *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
+func (r *userRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
 	var user model.User
 	err := r.db.WithContext(ctx).First(&user, "user_id = ?", id).Error
 	if err != nil {
@@ -29,16 +37,16 @@ func (r *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.User
 	return &user, nil
 }
 
-func (r *UserRepository) List(ctx context.Context, offset, limit int) ([]model.User, error) {
+func (r *userRepositoryImpl) List(ctx context.Context, offset, limit int) ([]model.User, error) {
 	var users []model.User
 	err := r.db.WithContext(ctx).Offset(offset).Limit(limit).Find(&users).Error
 	return users, err
 }
 
-func (r *UserRepository) Update(ctx context.Context, user *model.User) error {
+func (r *userRepositoryImpl) Update(ctx context.Context, user *model.User) error {
 	return r.db.WithContext(ctx).Save(user).Error
 }
 
-func (r *UserRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (r *userRepositoryImpl) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.db.WithContext(ctx).Delete(&model.User{}, "user_id = ?", id).Error
 }

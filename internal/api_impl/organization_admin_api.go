@@ -4,19 +4,18 @@ import (
 	"context"
 	"net/http"
 	"strconv"
-
 	"ping-badge-be/internal/model"
 	"ping-badge-be/internal/service"
-
+	"ping-badge-be/internal/constant"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 type OrganizationAdminAPI struct {
-	service *service.OrganizationAdminService
+	service service.OrganizationAdminService
 }
 
-func NewOrganizationAdminAPI(service *service.OrganizationAdminService) *OrganizationAdminAPI {
+func NewOrganizationAdminAPI(service service.OrganizationAdminService) *OrganizationAdminAPI {
 	return &OrganizationAdminAPI{service: service}
 }
 
@@ -45,18 +44,16 @@ func (api *OrganizationAdminAPI) CreateAdmin(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, admin)
-}
 
-func (api *OrganizationAdminAPI) GetAdmins(c *gin.Context) {
-	page := c.DefaultQuery("page", "1")
-	limit := c.DefaultQuery("limit", "10")
+	page := c.DefaultQuery("page", strconv.Itoa(constant.DefaultPage))
+	limit := c.DefaultQuery("limit", strconv.Itoa(constant.DefaultLimit))
 	pageInt, _ := strconv.Atoi(page)
 	limitInt, _ := strconv.Atoi(limit)
 	if pageInt < 1 {
-		pageInt = 1
+		pageInt = constant.DefaultPage
 	}
-	if limitInt < 1 || limitInt > 100 {
-		limitInt = 10
+	if limitInt < 1 || limitInt > constant.MaxLimit {
+		limitInt = constant.DefaultLimit
 	}
 	offset := (pageInt - 1) * limitInt
 	admins, err := api.service.ListAdmins(context.Background(), offset, limitInt)

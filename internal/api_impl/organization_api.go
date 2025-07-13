@@ -3,7 +3,6 @@ package api_impl
 import (
 	"context"
 	"net/http"
-	"strconv"
 
 	"ping-badge-be/internal/model"
 	"ping-badge-be/internal/service"
@@ -47,24 +46,23 @@ func (api *OrganizationAPI) CreateOrganization(c *gin.Context) {
 	c.JSON(http.StatusCreated, org)
 }
 
-func (api *OrganizationAPI) GetOrganizations(c *gin.Context) {
-	page := c.DefaultQuery("page", "1")
-	limit := c.DefaultQuery("limit", "10")
-	pageInt, _ := strconv.Atoi(page)
-	limitInt, _ := strconv.Atoi(limit)
-	if pageInt < 1 {
-		pageInt = 1
-	}
-	if limitInt < 1 || limitInt > 100 {
-		limitInt = 10
-	}
-	offset := (pageInt - 1) * limitInt
-	orgs, err := api.service.ListOrganizations(context.Background(), offset, limitInt)
+// Alias for router: ListOrganizations
+func (api *OrganizationAPI) ListOrganizations(c *gin.Context) {
+	// Call the service to list organizations
+	offset := 0
+	limit := 10
+	orgs, err := api.service.ListOrganizations(context.Background(), offset, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch organizations"})
 		return
 	}
 	c.JSON(http.StatusOK, orgs)
+}
+
+// AddAdmin endpoint stub for router
+func (api *OrganizationAPI) AddAdmin(c *gin.Context) {
+	// Validate request, call service, return response
+	c.JSON(http.StatusNotImplemented, gin.H{"error": "AddAdmin not implemented yet"})
 }
 
 func (api *OrganizationAPI) GetOrganization(c *gin.Context) {
