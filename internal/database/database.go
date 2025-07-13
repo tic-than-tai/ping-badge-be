@@ -24,7 +24,6 @@ func Initialize(databaseURL string) (*gorm.DB, error) {
 		&model.OrganizationAdmin{},
 		&model.Badge{},
 		&model.IssuedBadge{},
-		&model.UserBadgeProgress{},
 		&model.Activity{},
 		&model.ActivityParticipation{},
 		&model.BadgeView{},

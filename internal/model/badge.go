@@ -17,8 +17,8 @@ type Badge struct {
 	BaseModel
 
 	// Relationships
-	Organization Organization        `gorm:"-"`
-	IssuedBadges []IssuedBadge       `gorm:"-"`
-	Activities   []Activity          `gorm:"-"`
-	Progress     []UserBadgeProgress `gorm:"-"`
+	Organization Organization  `gorm:"-"`
+	IssuedBadges []IssuedBadge `gorm:"-"`
+	Activities   []Activity    `gorm:"-"`
+	Progress     []IssuedBadge `gorm:"-"`
 }
