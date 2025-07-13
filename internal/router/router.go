@@ -47,7 +47,7 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 
 	// Initialize UserStatistics API (layered architecture)
 	participationRepo := repository.NewActivityParticipationRepository(db)
-	participationService := service.NewActivityParticipationService(participationRepo)
+	participationService := service.NewActivityParticipationService(participationRepo, activityRepo, badgeRepo)
 	userStatisticsAPI := api_impl.NewUserStatisticsAPI(badgeService, activityService, participationService)
 
 	// Initialize ActivityParticipation API (layered architecture)

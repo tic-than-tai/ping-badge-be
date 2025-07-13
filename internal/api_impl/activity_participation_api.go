@@ -32,11 +32,11 @@ type CreateParticipationRequest struct {
 func (api *ActivityParticipationAPI) ListParticipations(c *gin.Context) {
 	activityID := c.Query("activity_id")
 	userID := c.Query("user_id")
-	status := c.Query("status")
-	
+	// status := c.Query("status")
+
 	var activityUUID, userUUID *uuid.UUID
 	var statusPtr *string
-	
+
 	if activityID != "" {
 		parsed, err := uuid.Parse(activityID)
 		if err != nil {
@@ -53,7 +53,7 @@ func (api *ActivityParticipationAPI) ListParticipations(c *gin.Context) {
 		}
 		userUUID = &parsed
 	}
-	
+
 	page := c.DefaultQuery("page", "1")
 	limit := c.DefaultQuery("limit", "10")
 	pageInt := 1
@@ -211,7 +211,8 @@ func (api *ActivityParticipationAPI) UploadEvidence(c *gin.Context) {
 	if participationID != nil {
 		participation, err = api.service.GetParticipation(context.Background(), *participationID)
 	} else {
-		participations, err := api.service.ListParticipations(context.Background(), activityID, userID, 0, 1)
+		var status = "NOT_COMPLETED"
+		participations, err := api.service.ListParticipations(context.Background(), activityID, userID, &status, 1, 1)
 		if err != nil || len(participations) == 0 {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Participation not found"})
 			return
@@ -265,7 +266,7 @@ func (api *ActivityParticipationAPI) UpdateParticipationStatus(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":      "Participation updated successfully",
+		"message":       "Participation updated successfully",
 		"participation": participation,
 		"badge_created": req.Status == "completed" || req.Status == "COMPLETED",
 	})

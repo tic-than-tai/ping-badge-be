@@ -18,9 +18,9 @@ type ActivityParticipationService interface {
 }
 
 type activityParticipationServiceImpl struct {
-	repo        repository.ActivityParticipationRepository
+	repo         repository.ActivityParticipationRepository
 	activityRepo repository.ActivityRepository
-	badgeRepo   repository.BadgeRepository
+	badgeRepo    repository.BadgeRepository
 }
 
 func NewActivityParticipationService(repo repository.ActivityParticipationRepository, activityRepo repository.ActivityRepository, badgeRepo repository.BadgeRepository) ActivityParticipationService {
@@ -54,7 +54,7 @@ func (s *activityParticipationServiceImpl) DeleteParticipation(ctx context.Conte
 
 func (s *activityParticipationServiceImpl) UpdateParticipationWithBadgeCreation(ctx context.Context, id uuid.UUID, proofURL *string, status string) (*model.ActivityParticipation, error) {
 	// Get the current participation
-	participation, err := s.repo.FindByID(id)
+	_, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, err
 	}

@@ -47,7 +47,8 @@ func (api *UserStatisticsAPI) GetUserStatistics(c *gin.Context) {
 	totalBadges := len(badges)
 
 	// Activities Completed
-	participations, err := api.participationService.ListParticipations(context.Background(), nil, &userID, 0, 1000)
+	var status = "COMPLETED"
+	participations, err := api.participationService.ListParticipations(context.Background(), nil, &userID, &status, 0, 1000)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch participations"})
 		return
