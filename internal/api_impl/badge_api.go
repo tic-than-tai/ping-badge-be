@@ -94,7 +94,7 @@ func (api *BadgeAPI) GetBadge(c *gin.Context) {
 }
 
 func (api *BadgeAPI) CreateBadge(c *gin.Context) {
-	orgID := c.Param("org_id")
+	orgID := c.Param("id")
 	orgUUID, err := uuid.Parse(orgID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid organization ID"})
