@@ -119,7 +119,7 @@ func (api *ActivityParticipationAPI) CreateParticipation(c *gin.Context) {
 		Status:                  req.Status,
 		ProofOfParticipationURL: req.ProofOfParticipationURL,
 		IssuedBadgeID:           issuedBadgeID,
-		CreatedAt:               c.MustGet("now").(time.Time), // or time.Now()
+		CreatedAt:               time.Now(),
 	}
 	if err := api.service.CreateParticipation(context.Background(), participation); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create participation"})
