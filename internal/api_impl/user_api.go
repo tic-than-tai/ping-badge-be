@@ -27,6 +27,12 @@ type CreateUserRequest struct {
 	FullName string `json:"full_name"`
 }
 
+type UpdateUserRequest struct {
+	Username string `json:"username" binding:"required"`
+	Email    string `json:"email" binding:"required"`
+	FullName string `json:"full_name"`
+}
+
 func (api *UserAPI) CreateUser(c *gin.Context) {
 	var req CreateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -92,7 +98,7 @@ func (api *UserAPI) UpdateUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
 	}
-	var req CreateUserRequest
+	var req UpdateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -104,7 +110,6 @@ func (api *UserAPI) UpdateUser(c *gin.Context) {
 	}
 	user.Username = req.Username
 	user.Email = req.Email
-	user.PasswordHash = req.Password // Hash in real impl
 	if req.FullName != "" {
 		user.FullName = &req.FullName
 	}
