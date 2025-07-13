@@ -14,4 +14,8 @@ type UserBadgeProgress struct {
 	Unit          *string   `json:"unit" gorm:"type:varchar(50)"`
 	IsQualified   bool      `json:"is_qualified" gorm:"default:false"`
 	LastUpdated   time.Time `json:"last_updated" gorm:"autoUpdateTime"`
+
+	// Relationships
+	User  User  `gorm:"-"`
+	Badge Badge `gorm:"-"`
 }

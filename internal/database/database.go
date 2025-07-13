@@ -1,7 +1,7 @@
 package database
 
 import (
-	"ping-badge-be/internal/models"
+	"ping-badge-be/internal/model"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -19,15 +19,15 @@ func Initialize(databaseURL string) (*gorm.DB, error) {
 
 	// Auto-migrate the schema
 	err = db.AutoMigrate(
-		&models.User{},
-		&models.Organization{},
-		&models.OrganizationAdmin{},
-		&models.Badge{},
-		&models.IssuedBadge{},
-		&models.UserBadgeProgress{},
-		&models.Activity{},
-		&models.ActivityParticipation{},
-		&models.BadgeView{},
+		&model.User{},
+		&model.Organization{},
+		&model.OrganizationAdmin{},
+		&model.Badge{},
+		&model.IssuedBadge{},
+		&model.UserBadgeProgress{},
+		&model.Activity{},
+		&model.ActivityParticipation{},
+		&model.BadgeView{},
 	)
 	if err != nil {
 		return nil, err

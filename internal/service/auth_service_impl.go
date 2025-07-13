@@ -43,7 +43,6 @@ func (s *AuthServiceImpl) Register(ctx context.Context, username, email, passwor
 		Email:        email,
 		PasswordHash: string(hashedPassword),
 		Role:         role,
-		CreatedAt:    time.Now(),
 	}
 	if fullName != "" {
 		user.FullName = &fullName

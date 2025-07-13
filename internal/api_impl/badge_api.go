@@ -3,9 +3,10 @@ package api_impl
 import (
 	"context"
 	"net/http"
-	"strconv"
 	"ping-badge-be/internal/model"
 	"ping-badge-be/internal/service"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )

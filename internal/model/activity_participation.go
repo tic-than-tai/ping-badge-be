@@ -14,4 +14,9 @@ type ActivityParticipation struct {
 	ProofOfParticipationURL *string    `json:"proof_of_participation_url" gorm:"type:varchar(255)"`
 	IssuedBadgeID           *uuid.UUID `json:"issued_badge_id" gorm:"type:uuid;uniqueIndex"`
 	CreatedAt               time.Time  `json:"created_at" gorm:"autoCreateTime"`
+
+	// Relationships
+	Activity    Activity     `gorm:"-"`
+	User        User         `gorm:"-"`
+	IssuedBadge *IssuedBadge `gorm:"-"`
 }

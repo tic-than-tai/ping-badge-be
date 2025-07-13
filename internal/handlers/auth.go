@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"ping-badge-be/internal/middleware"
-	"ping-badge-be/internal/models"
+	"ping-badge-be/internal/model"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -39,8 +39,8 @@ type LoginRequest struct {
 }
 
 type AuthResponse struct {
-	User  models.User `json:"user"`
-	Token string      `json:"token"`
+	User  model.User `json:"user"`
+	Token string     `json:"token"`
 }
 
 func (h *AuthHandler) Register(c *gin.Context) {
@@ -51,7 +51,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	}
 
 	// Check if user already exists
-	var existingUser models.User
+	var existingUser model.User
 	if err := h.db.Where("email = ? OR username = ?", req.Email, req.Username).First(&existingUser).Error; err == nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "User already exists"})
 		return
@@ -71,7 +71,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	}
 
 	// Create user
-	user := models.User{
+	user := model.User{
 		UserID:       uuid.New(),
 		Username:     req.Username,
 		Email:        req.Email,
@@ -112,7 +112,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	// Find user
-	var user models.User
+	var user model.User
 	if err := h.db.Where("email = ?", req.Email).First(&user).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
@@ -147,7 +147,7 @@ func (h *AuthHandler) GetProfile(c *gin.Context) {
 		return
 	}
 
-	var user models.User
+	var user model.User
 	if err := h.db.Where("user_id = ?", userID).First(&user).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
@@ -179,7 +179,7 @@ func (h *AuthHandler) UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	var user models.User
+	var user model.User
 	if err := h.db.Where("user_id = ?", userID).First(&user).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return

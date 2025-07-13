@@ -20,4 +20,10 @@ type IssuedBadge struct {
 	AdditionalData               map[string]interface{} `json:"additional_data" gorm:"type:jsonb"`
 	Status                       string                 `json:"status" gorm:"type:varchar(20);default:'issued'"`
 	BlockchainTxID               *string                `json:"blockchain_tx_id" gorm:"type:varchar(255)"`
+
+	// Relationships
+	Badge        Badge        `gorm:"-"`
+	User         User         `gorm:"-"`
+	Organization Organization `gorm:"-"`
+	Views        []BadgeView  `gorm:"-"`
 }
