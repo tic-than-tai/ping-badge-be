@@ -3,7 +3,6 @@ package router
 import (
 	"ping-badge-be/internal/api_impl"
 	"ping-badge-be/internal/config"
-	"ping-badge-be/internal/handlers"
 	"ping-badge-be/internal/middleware"
 	"ping-badge-be/internal/repository"
 	"ping-badge-be/internal/service"
@@ -18,11 +17,12 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	// Middleware
 	r.Use(middleware.CORS(cfg.CORSOrigins))
 
-	// Initialize handlers
-	authHandler := handlers.NewAuthHandler(db, cfg.JWTSecret)
+	// Initialize Auth API (layered architecture)
+	userRepo := repository.NewUserRepository(db)
+	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
+	authAPI := api_impl.NewAuthAPI(authService)
 
 	// Initialize User API (layered architecture)
-	userRepo := repository.NewUserRepository(db)
 	userService := service.NewUserService(userRepo)
 	userAPI := api_impl.NewUserAPI(userService)
 
@@ -56,8 +56,8 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 		// Auth routes
 		auth := api.Group("/auth")
 		{
-			auth.POST("/register", authHandler.Register)
-			auth.POST("/login", authHandler.Login)
+			auth.POST("/register", authAPI.Register)
+			auth.POST("/login", authAPI.Login)
 		}
 
 		// Public organization routes (use OrganizationAPI)
@@ -101,6 +101,10 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 		protected.PUT("/activities/:id", activityAPI.UpdateActivity)
 		protected.DELETE("/activities/:id", activityAPI.DeleteActivity)
 		// Add join and participations endpoints to ActivityAPI as needed
+
+		// Auth protected routes
+		protected.GET("/auth/profile", authAPI.GetProfile)
+		protected.PUT("/auth/profile", authAPI.UpdateProfile)
 	}
 
 	return r

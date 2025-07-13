@@ -11,9 +11,39 @@ import (
 type UserRepository interface {
 	Create(ctx context.Context, user *model.User) error
 	GetByID(ctx context.Context, id uuid.UUID) (*model.User, error)
+	FindByID(ctx context.Context, id interface{}) (*model.User, error)
+	FindByEmail(ctx context.Context, email string) (*model.User, error)
+	FindByEmailOrUsername(ctx context.Context, email, username string) (*model.User, error)
 	List(ctx context.Context, offset, limit int) ([]model.User, error)
 	Update(ctx context.Context, user *model.User) error
 	Delete(ctx context.Context, id uuid.UUID) error
+}
+
+func (r *userRepositoryImpl) FindByID(ctx context.Context, id interface{}) (*model.User, error) {
+	var user model.User
+	err := r.db.WithContext(ctx).First(&user, "user_id = ?", id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *userRepositoryImpl) FindByEmail(ctx context.Context, email string) (*model.User, error) {
+	var user model.User
+	err := r.db.WithContext(ctx).First(&user, "email = ?", email).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *userRepositoryImpl) FindByEmailOrUsername(ctx context.Context, email, username string) (*model.User, error) {
+	var user model.User
+	err := r.db.WithContext(ctx).Where("email = ? OR username = ?", email, username).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
 
 type userRepositoryImpl struct {
